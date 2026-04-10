@@ -1,5 +1,6 @@
-# Sample CI pipeline for Day 1 lab / demo — intentionally incomplete for gap analysis.
-# Learners: copy this file and add comments (Task 1). Do not assume this is "production ready".
+# Use this file when `lab1/` is the ROOT of its own GitHub repository.
+# Copy to: .github/workflows/ci.yml
+# (In the course monorepo, CI lives at the repository root instead — see ../.github/workflows/ci.yml)
 
 name: CI
 

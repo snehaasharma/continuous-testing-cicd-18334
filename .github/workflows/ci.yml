@@ -1,0 +1,91 @@
+# Sample CI for Day 1 lab / demo — targets lab1/ in this course monorepo.
+# Intentionally incomplete for gap analysis (see lab1/README.md).
+
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: lab1
+
+jobs:
+  lint:
+    name: Static analysis (Python)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Ruff
+        run: pip install ruff==0.8.4
+
+      - name: Run Ruff linter
+        run: ruff check .
+
+  unit-tests:
+    name: Unit tests (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run unit tests
+        run: pytest tests/ -v --tb=short
+
+  build:
+    name: Build artifact (simulated)
+    needs:
+      - lint
+      - unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Produce placeholder artifact
+        run: |
+          mkdir -p dist
+          echo "build-$(date -u +%Y%m%d%H%M%S)" > dist/BUILD_ID.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lab1-dist
+          path: lab1/dist/
+
+  deploy-staging:
+    name: Deploy to staging (simulated)
+    needs:
+      - build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Simulated deploy
+        run: |
+          echo "Staging deploy would run here."
+          echo "NOTE FOR LAB: There is no integration, contract, E2E, or performance gate before this step."

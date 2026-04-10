@@ -1,7 +1,7 @@
 # Lab 1 — Analyse, Map & Identify
 
 **Module 1 · Continuous Testing Fundamentals**  
-This folder is designed to be used as the root of a small sample repository (fork or copy into a new GitHub repo) for the Day 1 hands-on lab and instructor live demo.
+This folder holds the Day 1 hands-on lab. **In the course repository**, GitHub Actions is defined at the **repo root** (`.github/workflows/ci.yml`) and runs against `lab1/`. If learners use **only** `lab1/` as their own repo root, copy `standalone-repo.ci.yml` to `.github/workflows/ci.yml` in that repository.
 
 ## Prerequisites
 
@@ -18,8 +18,8 @@ Complete the three tasks below. Your **deliverables** are listed on the final sl
 
 ### Task 1 — Analyse the sample CI pipeline
 
-1. Fork this material into your own repository (or copy `lab1/` contents to a new repo root so `.github/workflows/` is at the repository root).
-2. Open `.github/workflows/ci.yml`.
+1. Open the workflow file: **course monorepo** → `.github/workflows/ci.yml` at the repository root. **Lab-only repo** → use `standalone-repo.ci.yml` (see note above) as `.github/workflows/ci.yml`.
+2. In your notes or a forked copy, keep the same file path for “the pipeline we analysed”.
 3. List every **trigger** (`on:`) and **job** that relates to quality or testing.
 4. Note which **test types** from the course (unit, integration, contract, E2E, performance, security, etc.) are **present** vs **missing**.
 5. Add **comments** directly in a copy of `ci.yml` (your annotated version) explaining what each step does and where the risks are.
@@ -61,7 +61,7 @@ ruff check .
 
 | Path | Purpose |
 |------|---------|
-| `.github/workflows/ci.yml` | Sample CI pipeline for analysis (intentional gaps) |
+| `../.github/workflows/ci.yml` (course repo) or `standalone-repo.ci.yml` (lab-only repo) | Sample CI pipeline for analysis (intentional gaps) |
 | `calculator.py` | Tiny module under test |
 | `tests/test_calculator.py` | Unit tests executed in CI |
 | `requirements.txt` | Runtime + test + lint dependencies |
