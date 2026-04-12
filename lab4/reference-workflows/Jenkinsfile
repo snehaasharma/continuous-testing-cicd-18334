@@ -1,0 +1,48 @@
+// Declarative pipeline — Day 4 reference (Jenkins)
+// Point Jenkins multibranch job at repo root; adjust tool labels to match your controller.
+
+pipeline {
+    agent any
+
+    tools {
+        // Register JDK & Maven under Jenkins → Manage Jenkins → Tools
+        jdk 'JDK-17'
+        maven 'Maven-3.9'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                dir('lab2/maven-junit5') {
+                    sh 'chmod +x mvnw && ./mvnw -B test -DexcludedGroups=integration'
+                }
+            }
+            post {
+                always {
+                    junit testResults: 'lab2/maven-junit5/target/surefire-reports/**/*.xml',
+                            allowEmptyResults: true
+                }
+            }
+        }
+
+        stage('Integration Tests') {
+            steps {
+                dir('lab2/maven-junit5') {
+                    sh './mvnw -B test -Dgroups=integration'
+                }
+            }
+            post {
+                always {
+                    junit testResults: 'lab2/maven-junit5/target/surefire-reports/**/*.xml',
+                            allowEmptyResults: true
+                }
+            }
+        }
+    }
+}

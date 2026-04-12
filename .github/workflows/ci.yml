@@ -78,6 +78,8 @@ jobs:
           name: lab1-dist
           path: lab1/dist/
 
+  # Lab2 Maven/JUnit runs in day4-pipeline.yml (unit → integration, artefacts).
+
   deploy-staging:
     name: Deploy to staging (simulated)
     needs:

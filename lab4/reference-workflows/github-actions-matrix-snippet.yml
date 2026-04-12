@@ -1,0 +1,30 @@
+# Reference only — paste into a workflow or merge with day4-pipeline.yml to discuss matrix / fail-fast.
+# Not loaded by GitHub unless placed under .github/workflows/ with a .yml name.
+
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: Example — matrix (reference)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cross-env-smoke:
+    name: Matrix demo
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false # all cells run; true = cancel siblings on first failure
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        java: ["17", "21"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - name: Run tests (lab2)
+        working-directory: lab2/maven-junit5
+        run: |
+          chmod +x mvnw
+          ./mvnw -B test -DexcludedGroups=integration

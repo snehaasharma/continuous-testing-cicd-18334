@@ -1,0 +1,13 @@
+{
+  "id": "lab5-env-ci",
+  "name": "Lab 5 CI",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "https://jsonplaceholder.typicode.com",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

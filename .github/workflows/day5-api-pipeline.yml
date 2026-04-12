@@ -1,0 +1,106 @@
+# Day 5 — API & service-level testing (REST Assured + Newman).
+# Optional repo variable: API_BASE_URL (Settings → Secrets and variables → Actions → Variables).
+# Leave unset to use WireMock inside UserApiIT.
+
+name: Day 5 — API tests
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-smoke-lab2:
+    name: Unit smoke (Lab2 — before API)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lab2/maven-junit5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Lab2 unit tests (no integration tag)
+        run: |
+          chmod +x mvnw
+          ./mvnw -B test -DexcludedGroups=integration
+
+  rest-assured-api:
+    name: REST Assured (Failsafe, groups=api)
+    needs: unit-smoke-lab2
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lab5/maven-api-tests
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Run API integration tests
+        env:
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+        run: |
+          chmod +x mvnw
+          ./mvnw -B verify -Dgroups=api
+
+      - name: Upload Failsafe reports (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failsafe-api-${{ github.run_id }}
+          path: lab5/maven-api-tests/target/failsafe-reports/
+          if-no-files-found: warn
+
+  newman-api:
+    name: Newman (Postman collection)
+    needs: rest-assured-api
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Newman
+        run: npm install -g newman
+
+      - name: Run collection
+        run: |
+          mkdir -p lab5/postman/results
+          newman run lab5/postman/collection.json \
+            -e lab5/postman/env-ci.json \
+            -r cli,junit \
+            --reporter-junit-export lab5/postman/results/newman-junit.xml
+
+      - name: Upload Newman JUnit (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-junit-${{ github.run_id }}
+          path: lab5/postman/results/newman-junit.xml
+          if-no-files-found: warn

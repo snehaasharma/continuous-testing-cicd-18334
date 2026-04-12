@@ -1,0 +1,12 @@
+# Copy to: .github/CODEOWNERS (repository root)
+# Replace @your-github-username with real users or @org/teams
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything (optional — remove if too noisy)
+* @your-github-username
+
+# Course lab: automation code
+/lab2/** @your-github-username
+
+# Pipeline definitions — often owned by DevOps
+/.github/workflows/** @your-github-username

@@ -1,0 +1,52 @@
+# Day 6 — Docker Compose: Postgres (healthcheck) + Maven test-runner on Compose network.
+
+name: Day 6 — Docker test environment
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  docker-compose-tests:
+    name: Compose (Postgres + test-runner)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build images and run tests
+        working-directory: lab6
+        env:
+          # Override with GitHub secret in real projects: DB_PASS: ${{ secrets.TEST_DB_PASS }}
+          DB_PASS: testpass
+        run: |
+          docker compose -f docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from test-runner
+
+      - name: Copy Surefire reports from test-runner
+        if: always()
+        working-directory: lab6
+        run: |
+          mkdir -p surefire-ci
+          docker compose -f docker-compose.test.yml cp test-runner:/app/target/surefire-reports ./surefire-ci/ || true
+
+      - name: Tear down containers and volumes
+        if: always()
+        working-directory: lab6
+        run: docker compose -f docker-compose.test.yml down -v
+
+      - name: Upload Surefire XML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: day6-surefire-${{ github.run_id }}
+          path: lab6/surefire-ci/
+          if-no-files-found: warn

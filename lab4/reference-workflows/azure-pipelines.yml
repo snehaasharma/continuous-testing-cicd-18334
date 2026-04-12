@@ -1,0 +1,82 @@
+# Azure Pipelines — Day 4 reference (multi-stage, test publishing)
+# Create pipeline in Azure DevOps → Pipelines → New → Azure Repos Git / GitHub → select this YAML.
+
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+
+stages:
+  - stage: CI
+    displayName: Build and test
+    jobs:
+      - job: UnitTests
+        displayName: Unit tests
+        steps:
+          - checkout: self
+
+          - task: Cache@2
+            inputs:
+              key: 'maven | "$(Agent.OS)" | lab2/maven-junit5/pom.xml'
+              path: $(MAVEN_CACHE_FOLDER)
+            displayName: Cache Maven local repo
+
+          - task: UseJavaVersion@1
+            inputs:
+              versionSpec: '17'
+              jdkArchitectureOption: 'x64'
+
+          - script: |
+              set -e
+              cd lab2/maven-junit5
+              chmod +x mvnw
+              ./mvnw -B -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER) test -DexcludedGroups=integration
+            displayName: Maven unit tests
+
+          - task: PublishTestResults@2
+            condition: always()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+              searchFolder: '$(System.DefaultWorkingDirectory)/lab2/maven-junit5/target'
+              failTaskOnFailedTests: true
+            displayName: Publish unit test results
+
+      - job: IntegrationTests
+        displayName: Integration tests
+        dependsOn: UnitTests
+        steps:
+          - checkout: self
+
+          - task: Cache@2
+            inputs:
+              key: 'maven | "$(Agent.OS)" | lab2/maven-junit5/pom.xml'
+              path: $(MAVEN_CACHE_FOLDER)
+
+          - task: UseJavaVersion@1
+            inputs:
+              versionSpec: '17'
+              jdkArchitectureOption: 'x64'
+
+          - script: |
+              set -e
+              cd lab2/maven-junit5
+              chmod +x mvnw
+              ./mvnw -B -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER) test -Dgroups=integration
+            displayName: Maven integration tests
+
+          - task: PublishTestResults@2
+            condition: always()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+              searchFolder: '$(System.DefaultWorkingDirectory)/lab2/maven-junit5/target'
+              failTaskOnFailedTests: true
+            displayName: Publish integration test results
