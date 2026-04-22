@@ -2,6 +2,7 @@ package com.training.ctcicd.lab2.tests;
 
 import com.training.ctcicd.lab2.config.FrameworkConfig;
 import com.training.ctcicd.lab2.pages.LoginPage;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class FeatureBranchExerciseTest {
 
     @Test
+    @DisplayName("Login URL is derived from configured base URL")
     void login_page_url_uses_configured_base() {
         var cfg = new FrameworkConfig().loadDefaults();
         var page = new LoginPage(cfg.baseUrl(), cfg.testUsers());
@@ -23,6 +25,7 @@ class FeatureBranchExerciseTest {
     }
 
     @Test
+    @DisplayName("Known user from config.properties can authenticate")
     void successful_login_for_configured_user() {
         var cfg = new FrameworkConfig().loadDefaults();
         var page = new LoginPage(cfg.baseUrl(), cfg.testUsers());
@@ -31,5 +34,17 @@ class FeatureBranchExerciseTest {
 
         assertThat(result.success()).isTrue();
         assertThat(result.message()).isEqualTo("ok");
+    }
+
+    @Test
+    @DisplayName("Wrong password is rejected with a clear failure")
+    void invalid_password_is_rejected() {
+        var cfg = new FrameworkConfig().loadDefaults();
+        var page = new LoginPage(cfg.baseUrl(), cfg.testUsers());
+
+        var result = page.submitCredentials("alice", "wrong-password");
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.message()).containsIgnoringCase("invalid");
     }
 }
