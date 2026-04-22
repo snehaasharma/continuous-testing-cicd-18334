@@ -31,4 +31,16 @@ class LoginSmokeLabTest {
         assertThat(result.success()).isTrue();
         assertThat(result.message()).isEqualTo("ok");
     }
+
+    @Test
+    @DisplayName("Wrong password is rejected with a clear failure message")
+    void wrong_password_is_rejected() {
+        var cfg = new FrameworkConfig().loadDefaults();
+        var page = new LoginPage(cfg.baseUrl(), cfg.testUsers());
+
+        var result = page.submitCredentials("alice", "nope");
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.message()).containsIgnoringCase("invalid");
+    }
 }
